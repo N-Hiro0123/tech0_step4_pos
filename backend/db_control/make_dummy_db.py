@@ -11,8 +11,8 @@ import json
 from datetime import date, datetime
 import pandas as pd
 
-from db_control.connect import engine
-import db_control.mymodels as mymodels
+from connect import engine
+import mymodels as mymodels
 
 
 def InsertValue(mymodel, valuse):
