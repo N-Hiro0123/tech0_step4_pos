@@ -20,7 +20,10 @@ base_path = os.path.dirname(os.path.abspath(__file__))
 ssl_cert_path = os.path.join(base_path, 'DigiCertGlobalRootCA.crt.pem')
 
 # SQLAlchemyの接続URLを作成
-connection_url = f"mysql+pymysql://{AZURE_MY_ADMIN}:{AZURE_MY_PASSWORD}@{AZURE_MY_SERVER}.mysql.database.azure.com/{AZURE_MY_DATABASE}"
+# connection_url = f"mysql+pymysql://{AZURE_MY_ADMIN}:{AZURE_MY_PASSWORD}@{AZURE_MY_SERVER}.mysql.database.azure.com/{AZURE_MY_DATABASE}"
+# 文字コードを指定（Azure側の設定utf8と合わせておく）
+connection_url = f"mysql+pymysql://{AZURE_MY_ADMIN}:{AZURE_MY_PASSWORD}@{AZURE_MY_SERVER}.mysql.database.azure.com/{AZURE_MY_DATABASE}?charset=utf8"
+
 
 # SQLAlchemyエンジンを作成
 engine = create_engine(connection_url, connect_args={"ssl": {"CA": ssl_cert_path}}, echo=True)
