@@ -17,13 +17,13 @@ AZURE_MY_DATABASE = os.getenv("AZURE_MY_DATABASE")
 
 # SSL証明書のパスを設定(connect.pyと同じ場所におく)
 base_path = os.path.dirname(os.path.abspath(__file__))
-ssl_cert_path = os.path.join(base_path, 'DigiCertGlobalRootG2.crt.pem')
+ssl_cert_path = os.path.join(base_path, 'DigiCertGlobalRootCA.crt.pem')
 
 # SQLAlchemyの接続URLを作成
 connection_url = f"mysql+pymysql://{AZURE_MY_ADMIN}:{AZURE_MY_PASSWORD}@{AZURE_MY_SERVER}.mysql.database.azure.com/{AZURE_MY_DATABASE}"
 
 # SQLAlchemyエンジンを作成
-engine = create_engine(connection_url, connect_args={"ssl": {"key": ssl_cert_path}}, echo=True)
+engine = create_engine(connection_url, connect_args={"ssl": {"CA": ssl_cert_path}}, echo=True)
 
 # 接続テスト
 try:
