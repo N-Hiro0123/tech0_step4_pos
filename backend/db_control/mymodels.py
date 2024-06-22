@@ -1,9 +1,3 @@
-# from sqlalchemy import ForeignKey
-# from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-# from datetime import datetime
-# from sqlalchemy import Column, Integer, String, create_engine
-
-
 from sqlalchemy import ForeignKey, Integer, String, CHAR, VARCHAR, create_engine, Column, DateTime, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, sessionmaker
 from datetime import datetime

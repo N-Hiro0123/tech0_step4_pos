@@ -44,28 +44,25 @@ def InsertValue(mymodel, valuse):
 mymodel = mymodels.Products
 
 values = {
-    "product_id": 1,
     "product_code": "1111111111111",
     "product_name": "1st_product",
-    "product_price": "1111",
+    "product_price": 1000,
 }
 
 InsertValue(mymodel, values)  # DBへ値を挿入
 
 values = {
-    "product_id": 2,
     "product_code": "2222222222222",
-    "product_name": "2nd_product",
-    "product_price": "2222",
+    "product_name": "商品２",
+    "product_price": 2000,
 }
 
 InsertValue(mymodel, values)  # DBへ値を挿入
 
 values = {
-    "product_id": 3,
     "product_code": "3333333333333",
     "product_name": "3rd_product",
-    "product_price": "3333",
+    "product_price": 3000,
 }
 
 InsertValue(mymodel, values)  # DBへ値を挿入
