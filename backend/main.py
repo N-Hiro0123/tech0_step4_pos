@@ -57,3 +57,10 @@ async def read_product():
 # def insert_transaction(transaction: schemas.TransactionCreate, db: Session = Depends(get_db)):
 #     model = mymodels.Transactions
 #     result = crud.insertTransaction(db, transaction)
+
+
+# dummy
+@app.post("/transaction")
+async def insert_transaction():
+    result = {"total_amount": 1500}
+    return result
