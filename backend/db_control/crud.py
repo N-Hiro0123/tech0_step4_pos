@@ -29,17 +29,6 @@ def selectProduct(db: Session, product_code):
 
     return result_dict
 
-    # query = select(mymodel).filter(product_code=product_code)
-    # try:
-    #     # トランザクションを開始
-    #     with session.begin():
-    #         df = pd.read_sql_query(query, con=engine)
-    #         result_json = df.to_json(orient="records", force_ascii=False)
 
-    # except sqlalchemy.exc.IntegrityError:
-    #     print("一意制約違反により、挿入に失敗しました")
-    #     result_json = None
-
-    # # セッションを閉じる
-    # session.close()
-    # return result_json
+# def insertTransaction(db: Session, transaction):
+#     mymodel = mymodels.Transaction
