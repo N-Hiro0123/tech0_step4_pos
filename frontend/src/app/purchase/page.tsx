@@ -13,6 +13,7 @@ export default function Purchase() {
   const [displayPrice, setDisyplayPrice] = useState("");
   const [purchaseList, setPurchaseList] = useState([]);
   const [totalValue, setTortalValue] = useState("");
+  const [showAlert, setShowAlert] = useState(false);
 
   // 入力ボックスの内容を常に取得
   const handleInputChange = (event) => {
@@ -68,7 +69,14 @@ export default function Purchase() {
   useEffect(() => {
     if (totalValue === "") return;
     alert("合計金額は" + totalValue);
+    setShowAlert(true);
   }, [totalValue]);
+
+  useEffect(() => {
+    if (showAlert) {
+      window.location.reload();
+    }
+  }, [showAlert]);
 
   return (
     <div>
