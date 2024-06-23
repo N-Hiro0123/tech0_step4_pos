@@ -1,7 +1,9 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from typing import Optional
 from sqlalchemy.orm import sessionmaker, Session
+from pydantic import BaseModel, ValidationError
 
 from db_control import crud, mymodels, schemas
 from db_control.connect import engine
@@ -33,34 +35,45 @@ def get_db():
         db.close()
 
 
+@app.get("/product", response_model=Optional[schemas.Product])
+async def read_product(product_code: str, db: Session = Depends(get_db)):
+    result = crud.selectProduct(db, product_code)
+    if result is None:
+        return None
+    return result
+
+
+# # dummy
 # @app.get("/product", response_model=Optional[schemas.Product])
-# def read_product(product_code: str, db: Session = Depends(get_db)):
-#     result = crud.selectProduct(db, product_code)
-#     if result is None:
-#         return None
+# async def read_product():
+#     result = {
+#         "product_code": "2222222222222",
+#         "product_id": 2,
+#         "product_name": "商品２",
+#         "product_price": 2000,
+#     }
+#     return result
+
+# 未作成
+# @app.post("/transaction", response_model=schemas.TransactionResponse)
+# def insert_transaction(transaction_request: schemas.TransactionRequest, db: Session = Depends(get_db)):
+#     model = mymodels.Transactions
+#     result = crud.insertTransaction(db, transaction_request)
 #     return result
 
 
 # dummy
-@app.get("/product", response_model=Optional[schemas.Product])
-async def read_product():
-    result = {
-        "product_code": "2222222222222",
-        "product_id": 2,
-        "product_name": "商品２",
-        "product_price": 2000,
-    }
-    return result
-
-
-# @app.post("/transaction", response_model=schemas.Transaction)
-# def insert_transaction(transaction: schemas.TransactionCreate, db: Session = Depends(get_db)):
-#     model = mymodels.Transactions
-#     result = crud.insertTransaction(db, transaction)
-
-
-# dummy
-@app.post("/transaction")
-async def insert_transaction():
+@app.post("/transaction", response_model=schemas.TransactionResponse)
+async def insert_transaction(transaction_request: schemas.TransactionRequest):
     result = {"total_amount": 1500}
+    # print(result)
     return result
+
+
+# エラーを確認する際に使ったもの
+# @app.exception_handler(ValidationError)
+# async def validation_exception_handler(request: Request, exc: ValidationError):
+#     return JSONResponse(
+#         status_code=422,
+#         content={"detail": exc.errors()},
+#     )

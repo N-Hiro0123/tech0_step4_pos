@@ -19,44 +19,36 @@ class Product(ProductBase):  # /product GET　response_body
     product_price: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True  # Pydantic v2における設定（orm_mode = Trueに相当）
 
 
 # 取引および取引詳細用のPydanticモデル
-class TransactionDetailBase(BaseModel):
-    product_id: int
+
+
+class TransactionDetail(BaseModel):
     product_code: str
+    product_id: int
     product_name: str
     product_price: int
+    product_count: int
 
 
-class TransactionDetailCreate(TransactionDetailBase):
-    pass
-
-
-class TransactionDetail(TransactionDetailBase):  # request_boyの中で使う
-    transaction_id: int
-    detail_id: int
-
-    class Config:
-        orm_mode = True
-
-
-class TransactionBase(BaseModel):
+class Transaction(BaseModel):
     employee_code: str
-    store_code: str
-    pos_number: str
+    store_code: int
+    pos_number: int
 
 
-class TransactionCreate(TransactionBase):
-    transaction_details: List[TransactionDetailCreate]
-
-
-class Transaction(TransactionBase):  # /transition POST request_body
-    transaction_id: int
-    trade_datetime: datetime
-    total_amount: int
-    transaction_details: List[TransactionDetail]
+class TransactionRequest(BaseModel):
+    transaction: Transaction
+    transactiondetails: List[TransactionDetail]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+
+class TransactionResponse(BaseModel):
+    total_amount: int
+
+    class Config:
+        from_attributes = True
