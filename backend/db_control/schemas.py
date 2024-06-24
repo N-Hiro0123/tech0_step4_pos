@@ -60,3 +60,17 @@ class Transaction(TransactionBase):  # /transition POST request_body
 
     class Config:
         orm_mode = True
+
+class PurchaseItem(BaseModel):
+    product_id: int
+    product_code: str
+    product_name: str
+    product_price: int
+
+class PurchaseRequest(BaseModel):
+    employee_code: str
+    items: List[PurchaseItem]
+
+class PurchaseResponse(BaseModel):
+    success: bool
+    total_amount: int
