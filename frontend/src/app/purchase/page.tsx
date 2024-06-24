@@ -117,7 +117,7 @@ export default function Purchase() {
         <div className="my-4">
           <h2 className="text-lg font-bold">商品情報</h2>
           <p>商品名: {displayName}</p>
-          <p>価格: {displayPrice}円</p>
+          {displayPrice ? <p>価格: {displayPrice}円</p> : <p>価格: </p>}
         </div>
         <button onClick={handleAddProduct} className="btn btn-primary mb-4 w-full">
           商品を追加
