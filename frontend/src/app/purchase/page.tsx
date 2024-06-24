@@ -1,29 +1,24 @@
 "use client";
-import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import fetchProduct from "./getProduct";
 import addProduct from "./addProduct";
 import fetchPurchase from "./postPurchase";
 
-import { use, useEffect, useState } from "react";
-
 export default function Purchase() {
   const [inputValue, setInputValue] = useState("");
-  const [productInfo, setProductInfo] = useState([]);
-  const [displayName, setDisyplayName] = useState("");
-  const [displayPrice, setDisyplayPrice] = useState("");
+  const [productInfo, setProductInfo] = useState({});
+  const [displayName, setDisplayName] = useState("");
+  const [displayPrice, setDisplayPrice] = useState("");
   const [purchaseList, setPurchaseList] = useState([]);
-  const [totalValue, setTortalValue] = useState("");
+  const [totalValue, setTotalValue] = useState("");
   const [showAlert, setShowAlert] = useState(false);
 
-  // 入力ボックスの内容を常に取得
   const handleInputChange = (event) => {
     setInputValue(event.target.value);
   };
 
-  //  ボタンを押した時に製品情報を取得
   const handleSubmit = async (event) => {
     event.preventDefault();
-
     if (inputValue.trim() === "") {
       alert(`商品コードを入力してください`);
     } else if (inputValue.trim().length !== 13) {
@@ -31,39 +26,61 @@ export default function Purchase() {
     } else {
       const datas = await fetchProduct(inputValue);
       if (datas === null) {
-        setProductInfo([]); // 初期化
-        setDisyplayName("商品がマスタ未登録です");
+        setProductInfo({});
+        setDisplayName("商品がマスタ未登録です");
       } else {
         setProductInfo(datas);
-        setDisyplayName(datas.product_name);
-        setDisyplayPrice(datas.product_price);
+        setDisplayName(datas.product_name);
+        setDisplayPrice(datas.product_price);
       }
     }
   };
 
-  //  ボタンを押した時に製品をリストへ追加するともに、各ボックスを初期化
-  const handleAddProduct = async (event) => {
-    if (productInfo.length !== 0) {
-      event.preventDefault();
-      console.log(purchaseList);
-      addProduct(purchaseList, productInfo);
-      console.log(purchaseList);
-
+  const handleAddProduct = (event) => {
+    event.preventDefault();
+    if (Object.keys(productInfo).length !== 0) {
+      setPurchaseList((prevList) => {
+        const newList = [...prevList];
+        addProduct(newList, productInfo);
+        return newList;
+      });
       setInputValue("");
-      setDisyplayName("");
-      setDisyplayPrice("");
-      setProductInfo([]);
+      setDisplayName("");
+      setDisplayPrice("");
+      setProductInfo({});
     }
-    console.log(purchaseList);
   };
 
-  //  ボタンを押した時にリストの内容を購入する
   const handlePurchase = async (event) => {
+    event.preventDefault();
     if (purchaseList.length !== 0) {
-      event.preventDefault();
       const res = await fetchPurchase(purchaseList, "0123456789");
-      setTortalValue(res.total_amount);
+      setTotalValue(res.total_amount);
     }
+  };
+
+  const handleRemoveProduct = (product_code) => {
+    setPurchaseList((prevList) => prevList.filter((item) => item.product_code !== product_code));
+  };
+
+  const handleIncrement = (product_code) => {
+    setPurchaseList((prevList) =>
+      prevList.map((item) =>
+        item.product_code === product_code
+          ? { ...item, product_count: item.product_count + 1 }
+          : item
+      )
+    );
+  };
+
+  const handleDecrement = (product_code) => {
+    setPurchaseList((prevList) =>
+      prevList.map((item) =>
+        item.product_code === product_code && item.product_count > 1
+          ? { ...item, product_count: item.product_count - 1 }
+          : item
+      )
+    );
   };
 
   useEffect(() => {
@@ -79,44 +96,80 @@ export default function Purchase() {
   }, [showAlert]);
 
   return (
-    <div>
-      <form onSubmit={handleSubmit}>
-        <label>
-          Input:
-          <input type="text" value={inputValue} onChange={handleInputChange} />
-        </label>
-        <button type="submit">★★★商品コード読み込み★★★</button>
-      </form>
-      <h1>ProductInfo</h1>
-
-      <p>Product Code: {productInfo?.product_code}</p>
-      <p>Product ID: {productInfo?.product_id}</p>
-      <p>Product Name: {productInfo?.product_name}</p>
-      <p>Product Price: {productInfo?.product_price}</p>
-      <h1>■■仕様１■■</h1>
-
-      <p>表示する商品名:{displayName}</p>
-      <p>商品の値段 {displayPrice}</p>
-
-      <h1>■■仕様２■■</h1>
-      <button type="button" onClick={handleAddProduct}>
-        ★★★商品の追加★★★
-      </button>
-      <div>
-        {purchaseList?.map((product) => (
-          <div key={product?.product_id}>
-            <p>Product Code: {product?.product_code}</p>
-            <p>Product ID: {product?.product_id}</p>
-            <p>Product Name: {product?.product_name}</p>
-            <p>Product Price: {product?.product_price}</p>
-            <p>Product Count: {product?.product_count}</p>
+    <div className="bg-lightblue-100 min-h-screen flex flex-col items-center">
+      <div className="container mx-auto p-4 bg-white shadow-md rounded-lg flex-grow">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text">商品コード</span>
+            </label>
+            <input
+              type="text"
+              value={inputValue}
+              onChange={handleInputChange}
+              className="input input-bordered"
+            />
           </div>
-        ))}
+          <button type="submit" className="btn btn-primary w-full">
+            商品コード読み込み
+          </button>
+        </form>
+        <div className="my-4">
+          <h2 className="text-lg font-bold">商品情報</h2>
+          <p>商品名: {displayName}</p>
+          <p>価格: {displayPrice}円</p>
+        </div>
+        <button onClick={handleAddProduct} className="btn btn-primary mb-4 w-full">
+          商品を追加
+        </button>
+        <div>
+          <h2 className="text-lg font-bold">購入リスト</h2>
+          {purchaseList.map((product) => (
+            <div
+              key={product.product_code}
+              className="border-b border-gray-200 py-2 flex justify-between items-center"
+            >
+              <div>
+                <p>商品名: {product.product_name}</p>
+                <p>価格: {product.product_price}円</p>
+                <p>合計: {product.product_count * product.product_price}円</p>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="text"
+                  value={product.product_count}
+                  readOnly
+                  className="input input-bordered input-sm text-center w-12 mx-2"
+                />
+                <p> 個　</p>
+                <div className="flex flex-col items-center">
+                  <button
+                    onClick={() => handleIncrement(product.product_code)}
+                    className="btn btn-outline btn-sm"
+                  >
+                    ▲
+                  </button>
+                  <button
+                    onClick={() => handleDecrement(product.product_code)}
+                    className="btn btn-outline btn-sm"
+                  >
+                    ▼
+                  </button>
+                </div>
+                <button
+                  onClick={() => handleRemoveProduct(product.product_code)}
+                  className="btn btn-error ml-4"
+                >
+                  削除
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+        <button onClick={handlePurchase} className="btn btn-primary w-full mb-4 btm-nav-xs">
+          購入
+        </button>
       </div>
-      <h1>■■仕様３■■</h1>
-      <button type="button" onClick={handlePurchase}>
-        ★★★商品の購入★★★
-      </button>
     </div>
   );
 }

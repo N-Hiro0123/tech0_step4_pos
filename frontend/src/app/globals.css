@@ -18,11 +18,7 @@
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
+  background: linear-gradient(to bottom, transparent, rgb(var(--background-end-rgb)))
     rgb(var(--background-start-rgb));
 }
 
@@ -30,4 +26,36 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+}
+
+/* global.css */
+.bg-lightblue-100 {
+  background-color: #e0f7fa; /* 薄い水色 */
+}
+
+.container {
+  background-color: white; /* 白色 */
+  padding: 16px;
+  border-radius: 8px; /* 角を丸める */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* シャドウを追加 */
+}
+
+.btn-primary {
+  background-color: #6200ea; /* 青色 */
+  color: white;
+}
+
+.btn-outline {
+  border: 1px solid #6200ea;
+  color: #6200ea;
+}
+
+.btn-error {
+  background-color: #b00020;
+  color: white;
+}
+
+.input-bordered {
+  border: 1px solid #ccc;
+  padding: 8px;
 }
