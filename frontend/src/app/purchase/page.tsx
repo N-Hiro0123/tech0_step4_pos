@@ -28,6 +28,7 @@ export default function Purchase() {
       if (datas === null) {
         setProductInfo({});
         setDisplayName("商品がマスタ未登録です");
+        setDisplayPrice("");
       } else {
         setProductInfo(datas);
         setDisplayName(datas.product_name);
@@ -85,7 +86,7 @@ export default function Purchase() {
 
   useEffect(() => {
     if (totalValue === "") return;
-    alert("合計金額は" + totalValue);
+    alert("合計金額は" + totalValue + "円です");
     setShowAlert(true);
   }, [totalValue]);
 

@@ -1,4 +1,7 @@
-from fastapi import FastAPI, Depends, Request, HTTPException
+from fastapi import FastAPI, Depends, HTTPException
+from sqlalchemy.orm import sessionmaker, Session
+
+# from datetime import datetime
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from typing import Optional
@@ -38,9 +41,54 @@ def get_db():
 @app.get("/product", response_model=Optional[schemas.Product])
 async def read_product(product_code: str, db: Session = Depends(get_db)):
     result = crud.selectProduct(db, product_code)
-    if result is None:
-        return None
     return result
+
+
+@app.post("/purchase", response_model=schemas.TransactionResponse)
+def create_purchase(purchase: schemas.TransactionRequest, db: Session = Depends(get_db)):
+    try:
+        total_amount = 0
+
+        # 取引テーブルへ登録
+        transaction = mymodels.Transactions(
+            # datetime=datetime.now(),
+            employee_code=purchase.transaction.employee_code,
+            store_code=purchase.transaction.store_code,
+            pos_number=purchase.transaction.pos_number,
+            total_amount=0,
+        )
+        db.add(transaction)
+        db.commit()
+        db.refresh(transaction)
+        transaction_id = transaction.transaction_id
+
+        # 取引明細へ登録
+        detail_id = 0
+        for idx, item in enumerate(purchase.transactiondetails):
+            for count in range(item.product_count):
+                detail_id += 1
+                detail = mymodels.TransactionDetails(
+                    transaction_id=transaction_id,
+                    detail_id=detail_id,
+                    product_id=item.product_id,
+                    product_code=item.product_code,
+                    product_name=item.product_name,
+                    product_price=item.product_price,
+                )
+                db.add(detail)
+                total_amount += item.product_price
+
+        # 取引テーブルを更新
+        transaction.total_amount = total_amount
+        db.commit()
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.close()
+
+    return schemas.TransactionResponse(total_amount=total_amount)
 
 
 # # dummy
@@ -54,20 +102,13 @@ async def read_product(product_code: str, db: Session = Depends(get_db)):
 #     }
 #     return result
 
-# 未作成
+
+# # dummy
 # @app.post("/transaction", response_model=schemas.TransactionResponse)
-# def insert_transaction(transaction_request: schemas.TransactionRequest, db: Session = Depends(get_db)):
-#     model = mymodels.Transactions
-#     result = crud.insertTransaction(db, transaction_request)
+# async def insert_transaction(transaction_request: schemas.TransactionRequest):
+#     result = {"total_amount": 1500}
+#     # print(result)
 #     return result
-
-
-# dummy
-@app.post("/transaction", response_model=schemas.TransactionResponse)
-async def insert_transaction(transaction_request: schemas.TransactionRequest):
-    result = {"total_amount": 1500}
-    # print(result)
-    return result
 
 
 # エラーを確認する際に使ったもの

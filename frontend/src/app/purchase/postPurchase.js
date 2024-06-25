@@ -1,4 +1,9 @@
-export default async function fetchPurchase(purchaseList, employeeCode = "", storeCode = 30, posNumber = 90) {
+export default async function fetchPurchase(
+  purchaseList,
+  employeeCode = "",
+  storeCode = 30,
+  posNumber = 90
+) {
   const transaction = {
     employee_code: employeeCode,
     store_code: storeCode,
@@ -13,7 +18,7 @@ export default async function fetchPurchase(purchaseList, employeeCode = "", sto
   const body_msg = JSON.stringify(values);
   console.log(body_msg);
 
-  const res = await fetch(process.env.NEXT_PUBLIC_API_ENDPOINT + `/transaction`, {
+  const res = await fetch(process.env.NEXT_PUBLIC_API_ENDPOINT + `/purchase`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: body_msg,
