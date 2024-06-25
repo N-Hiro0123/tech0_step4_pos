@@ -68,7 +68,12 @@ def create_purchase(purchase: schemas.TransactionRequest, db: Session = Depends(
             for count in range(item.product_count):
                 detail_id += 1
                 detail = mymodels.TransactionDetails(
-                    transaction_id=transaction_id, detail_id=detail_id, product_id=item.product_id, product_code=item.product_code, product_name=item.product_name, product_price=item.product_price
+                    transaction_id=transaction_id,
+                    detail_id=detail_id,
+                    product_id=item.product_id,
+                    product_code=item.product_code,
+                    product_name=item.product_name,
+                    product_price=item.product_price,
                 )
                 db.add(detail)
                 total_amount += item.product_price
