@@ -1,12 +1,32 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import sessionmaker, Session
-from typing import Optional, List
-from datetime import datetime
+
+# from datetime import datetime
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from typing import Optional
+from sqlalchemy.orm import sessionmaker, Session
+from pydantic import BaseModel, ValidationError
 
 from db_control import crud, mymodels, schemas
 from db_control.connect import engine
 
 app = FastAPI()
+
+# 許可するオリジンを設定
+origins = [
+    "http://localhost:3000",  # Reactアプリがホストされている場所
+    # 必要に応じて他のオリジンも追加
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  # 許可するオリジンを指定
+    allow_credentials=True,
+    allow_methods=["*"],  # 許可するHTTPメソッドを指定
+    allow_headers=["*"],  # 許可するHTTPヘッダーを指定
+)
+
 
 # データベースセッションの取得
 def get_db():
@@ -17,25 +37,25 @@ def get_db():
     finally:
         db.close()
 
-@app.get("/product/{code}", response_model=Optional[schemas.Product])
-def read_product(code: str, db: Session = Depends(get_db)):
-    result = crud.selectProduct(db, code)
-    if result is None:
-        raise HTTPException(status_code=404, detail="Product not found")
+
+@app.get("/product", response_model=Optional[schemas.Product])
+async def read_product(product_code: str, db: Session = Depends(get_db)):
+    result = crud.selectProduct(db, product_code)
     return result
 
-@app.post("/purchase", response_model=schemas.PurchaseResponse)
-def create_purchase(purchase: schemas.PurchaseRequest, db: Session = Depends(get_db)):
+
+@app.post("/purchase", response_model=schemas.TransactionResponse)
+def create_purchase(purchase: schemas.TransactionRequest, db: Session = Depends(get_db)):
     try:
         total_amount = 0
 
         # 取引テーブルへ登録
         transaction = mymodels.Transactions(
-            datetime=datetime.now(),
-            employee_code=purchase.employee_code,
-            store_code='30',
-            pos_no='90',
-            total_amt=0
+            # datetime=datetime.now(),
+            employee_code=purchase.transaction.employee_code,
+            store_code=purchase.transaction.store_code,
+            pos_number=purchase.transaction.pos_number,
+            total_amount=0,
         )
         db.add(transaction)
         db.commit()
@@ -43,20 +63,18 @@ def create_purchase(purchase: schemas.PurchaseRequest, db: Session = Depends(get
         transaction_id = transaction.transaction_id
 
         # 取引明細へ登録
-        for idx, item in enumerate(purchase.items):
-            detail = mymodels.TransactionDetails(
-                transaction_id=transaction_id,
-                detail_id=idx + 1,
-                product_id=item.product_id,
-                product_code=item.product_code,
-                product_name=item.product_name,
-                product_price=item.product_price
-            )
-            db.add(detail)
-            total_amount += item.product_price
+        detail_id = 0
+        for idx, item in enumerate(purchase.transactiondetails):
+            for count in range(item.product_count):
+                detail_id += 1
+                detail = mymodels.TransactionDetails(
+                    transaction_id=transaction_id, detail_id=detail_id, product_id=item.product_id, product_code=item.product_code, product_name=item.product_name, product_price=item.product_price
+                )
+                db.add(detail)
+                total_amount += item.product_price
 
         # 取引テーブルを更新
-        transaction.total_amt = total_amount
+        transaction.total_amount = total_amount
         db.commit()
 
     except Exception as e:
@@ -65,8 +83,33 @@ def create_purchase(purchase: schemas.PurchaseRequest, db: Session = Depends(get
     finally:
         db.close()
 
-    return schemas.PurchaseResponse(success=True, total_amount=total_amount)
+    return schemas.TransactionResponse(total_amount=total_amount)
 
 
+# # dummy
+# @app.get("/product", response_model=Optional[schemas.Product])
+# async def read_product():
+#     result = {
+#         "product_code": "2222222222222",
+#         "product_id": 2,
+#         "product_name": "商品２",
+#         "product_price": 2000,
+#     }
+#     return result
 
 
+# # dummy
+# @app.post("/transaction", response_model=schemas.TransactionResponse)
+# async def insert_transaction(transaction_request: schemas.TransactionRequest):
+#     result = {"total_amount": 1500}
+#     # print(result)
+#     return result
+
+
+# エラーを確認する際に使ったもの
+# @app.exception_handler(ValidationError)
+# async def validation_exception_handler(request: Request, exc: ValidationError):
+#     return JSONResponse(
+#         status_code=422,
+#         content={"detail": exc.errors()},
+#     )
