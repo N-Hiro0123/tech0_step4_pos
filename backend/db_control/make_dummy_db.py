@@ -82,3 +82,32 @@ dummy_data_list = [
 
 for i in range(len(dummy_data_list)):
     InsertValue(mymodel, dummy_data_list[i])  # DBへ値を挿入
+
+
+# userデータの挿入
+
+from passlib.context import CryptContext
+import os
+from dotenv import load_dotenv
+
+# 環境変数のロード
+load_dotenv()
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = os.getenv("ALGORITHM")
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+# パスワードのハッシュ化と検証
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
+
+
+values = {
+    "user_name": "user1",
+    "user_password": get_password_hash("user1"),
+}
+
+mymodel = mymodels.UserDatas
+InsertValue(mymodel, values)

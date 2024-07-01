@@ -52,3 +52,27 @@ class TransactionResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    user_id: int
+
+
+class UserInfoAll(BaseModel):
+    user_id: int
+    user_name: str
+
+
+class UserInfo(BaseModel):
+    user_name: str
+    user_password: Optional[str]
+
+
+class CreateUserInfoRes(BaseModel):
+    message: str
+    status: int

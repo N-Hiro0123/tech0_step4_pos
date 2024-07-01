@@ -1,4 +1,5 @@
 export default async function fetchPurchase(
+  jwt,
   purchaseList,
   employeeCode = "",
   storeCode = 30,
@@ -16,11 +17,11 @@ export default async function fetchPurchase(
   };
 
   const body_msg = JSON.stringify(values);
-  console.log(body_msg);
+  // console.log(body_msg);
 
   const res = await fetch(process.env.NEXT_PUBLIC_API_ENDPOINT + `/purchase`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${jwt}` },
     body: body_msg,
   });
 

@@ -1,8 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import fetchProduct from "./getProduct";
 import addProduct from "./addProduct";
 import fetchPurchase from "./postPurchase";
+import fetchUserInfo from "./fetchUserInfo";
 
 export default function Purchase() {
   const [inputValue, setInputValue] = useState("");
@@ -12,6 +14,39 @@ export default function Purchase() {
   const [purchaseList, setPurchaseList] = useState([]);
   const [totalValue, setTotalValue] = useState("");
   const [showAlert, setShowAlert] = useState(false);
+
+  const [isJwt, setIsJwt] = useState<boolean>(false);
+  const [jwtMessage, setJwtMessage] = useState<string>("");
+  const [userInfo, setUserInfo] = useState<{
+    user_id?: number;
+    user_name?: string;
+  }>({});
+  const router = useRouter();
+
+  useEffect(() => {
+    const checkJwt = async () => {
+      const jwt = localStorage.getItem("token");
+      if (jwt) {
+        setIsJwt(true);
+        const data = await fetchUserInfo(jwt); // JWTがある場合、ユーザー情報を取得
+        if (data) {
+          setUserInfo(data);
+        }
+      } else {
+        setIsJwt(false);
+        setJwtMessage("JWTなし");
+        alert("ログインしていないので、ログインページへ遷移します。");
+        router.push("/login");
+      }
+    };
+
+    checkJwt();
+  }, [router]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    router.push("/login");
+  };
 
   const handleInputChange = (event) => {
     setInputValue(event.target.value);
@@ -24,7 +59,8 @@ export default function Purchase() {
     } else if (inputValue.trim().length !== 13) {
       alert(`商品コードは13文字である必要があります`);
     } else {
-      const datas = await fetchProduct(inputValue);
+      const jwt = localStorage.getItem("token");
+      const datas = await fetchProduct(inputValue, jwt);
       if (datas === null) {
         setProductInfo({});
         setDisplayName("商品がマスタ未登録です");
@@ -55,7 +91,8 @@ export default function Purchase() {
   const handlePurchase = async (event) => {
     event.preventDefault();
     if (purchaseList.length !== 0) {
-      const res = await fetchPurchase(purchaseList, "0123456789");
+      const jwt = localStorage.getItem("token");
+      const res = await fetchPurchase(jwt, purchaseList, "0123456789");
       setTotalValue(res.total_amount);
     }
   };
@@ -99,6 +136,12 @@ export default function Purchase() {
   return (
     <div className="bg-lightblue-100 min-h-screen flex flex-col items-center">
       <div className="container mx-auto p-4 bg-white shadow-md rounded-lg flex-grow">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold">購入画面</h1>
+          <button onClick={handleLogout} className="btn btn-primary">
+            ログアウト
+          </button>
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="form-control">
             <label className="label">
