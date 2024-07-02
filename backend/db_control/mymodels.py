@@ -43,3 +43,10 @@ class TransactionDetails(Base):
     product_price: Mapped[int] = mapped_column(Integer)
     transactions = relationship("Transactions", back_populates="transaction_details")
     products = relationship("Products", back_populates="transaction_details")
+
+
+class UserDatas(Base):
+    __tablename__ = "user_datas"
+    user_id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
+    user_password: Mapped[str] = mapped_column(VARCHAR(60), nullable=False)  # ハッシュ化
+    user_name: Mapped[str] = mapped_column(VARCHAR(50), nullable=False, unique=True)

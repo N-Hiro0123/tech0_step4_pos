@@ -11,7 +11,12 @@ from pydantic import BaseModel, ValidationError
 from db_control import crud, mymodels, schemas
 from db_control.connect import engine
 
+from db_control.auth import router as auth_router, get_current_user
+
 app = FastAPI()
+
+# ルーターのインクルード
+app.include_router(auth_router)
 
 # 許可するオリジンを設定
 origins = [
@@ -39,13 +44,13 @@ def get_db():
 
 
 @app.get("/product", response_model=Optional[schemas.Product])
-async def read_product(product_code: str, db: Session = Depends(get_db)):
+async def read_product(product_code: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user)):
     result = crud.selectProduct(db, product_code)
     return result
 
 
 @app.post("/purchase", response_model=schemas.TransactionResponse)
-def create_purchase(purchase: schemas.TransactionRequest, db: Session = Depends(get_db)):
+def create_purchase(purchase: schemas.TransactionRequest, db: Session = Depends(get_db), user_id: int = Depends(get_current_user)):
     try:
         total_amount = 0
 
